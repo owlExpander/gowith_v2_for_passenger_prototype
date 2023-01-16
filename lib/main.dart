@@ -9,7 +9,7 @@ import 'package:location/location.dart';
 import 'package:gowith_v2_for_passenger_prototype/page_ticket.dart';
 
 
-const String appTitle = '동행v2 (승객용) v0.2';
+const String appTitle = '동행v2 (승객용) v0.4';
 
 void main() {
   runApp(const MyApp());
@@ -79,66 +79,175 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      appBar: AppBar(
-        title: const Text(appTitle),
-        actions: [
-          // QR 버튼
-          IconButton(
-              onPressed: () {
-                showDialog<void>(context: context, builder: (context) => _showAlertDialog('알림', '준비중 입니다.'));
-              },
-              icon: const Icon(Icons.qr_code)
+    return Container(
+      child: Scaffold(
+        key: _scaffoldKey,
+        appBar: AppBar(
+          title: const Text(appTitle),
+          actions: [
+            // QR 버튼
+            IconButton(
+                onPressed: () {
+                  showDialog<void>(context: context, builder: (context) => _showAlertDialog('준비중 입니다.'));
+                },
+                icon: const Icon(Icons.qr_code_scanner)
+            ),
+            // 알림 버튼
+            IconButton(
+                visualDensity: const VisualDensity(horizontal: -4.0, vertical: -4.0), // 아이콘 간격 줄임
+                padding: EdgeInsets.zero,                                             // 아이콘 간격 줄임
+                onPressed: () {
+                  showDialog<void>(context: context, builder: (context) => _showAlertDialog('준비중 입니다.'));
+                },
+                icon: const Icon(Icons.notifications_none)
+            ),
+            // 메뉴 버튼
+            IconButton(
+                onPressed: _openEndDrawer,
+                icon: const Icon(Icons.menu)
+            ),
+          ],
+          bottom: PreferredSize(
+            preferredSize: Size.zero,
+            child: Text(nCheckCnt > 0 ? '$nCheckCnt | $lat | $lng' : ''),
           ),
-          // 알림 버튼
-          IconButton(
-              onPressed: () {
-                showDialog<void>(context: context, builder: (context) => _showAlertDialog('알림', '준비중 입니다.'));
-              },
-              icon: const Icon(Icons.notifications)
-          ),
-          // 메뉴 버튼
-          IconButton(
-              onPressed: _openEndDrawer,
-              icon: const Icon(Icons.menu)
-          ),
-        ],
-        bottom: PreferredSize(
-          preferredSize: Size.zero,
-          child: Text(nCheckCnt > 0 ? '$nCheckCnt | $lat | $lng' : ''),
+        ),
+        endDrawer: getEndDrawer(),
+        endDrawerEnableOpenDragGesture: false,
+        body: _pageList[_currentPageIndex],
+        bottomNavigationBar: BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,	// item이 4개 이상일 경우 추가
+          items: const [
+            BottomNavigationBarItem(icon: Icon(Icons.confirmation_number_outlined), label: '탑승권'),
+            BottomNavigationBarItem(icon: Icon(Icons.near_me_outlined), label: '노선 검색'),
+            BottomNavigationBarItem(icon: Icon(Icons.inventory_2_outlined), label: '동행 승하차'),
+            BottomNavigationBarItem(icon: Icon(Icons.sentiment_satisfied_alt), label: '마이페이지'),
+          ],
+          currentIndex: _currentPageIndex,
+          onTap: (index) {
+            setState(() {
+              _currentPageIndex = index;
+            });
+          },
         ),
       ),
-      endDrawer: Drawer(
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              const Text('This is the Drawer'),
-              ElevatedButton(
-                onPressed: _closeEndDrawer,
-                child: const Text('Close Drawer'),
+    );
+  }
+
+  // 메뉴 영역
+  Widget getEndDrawer() {
+    /*return Container(
+      width: MediaQuery.of(context).size.width,
+      child: Drawer(
+        child: ListView(
+          children: [
+            DrawerHeader(
+              child: Text('Drawer Header'),
+              decoration: BoxDecoration(
+                color: Colors.blue,
               ),
-            ],
-          ),
+            ),
+            ListTile(
+              title: Text('Item 1'),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              title: Text('Item 2'),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+          ],
         ),
       ),
-      endDrawerEnableOpenDragGesture: false,
-      body: _pageList[_currentPageIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,	// item이 4개 이상일 경우 추가
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.confirmation_number), label: '탑승권'),
-          BottomNavigationBarItem(icon: Icon(Icons.assistant_navigation), label: '노선 검색'),
-          BottomNavigationBarItem(icon: Icon(Icons.link), label: '동행 승하차'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: '마이페이지'),
+    );*/
+    return Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false, // 자동으로 생기는 백버튼 제거
+        titleSpacing: 0.0,
+        title: Row(
+          children: [
+            // QR 버튼
+            IconButton(
+                onPressed: () {
+                  showDialog<void>(context: context, builder: (context) => _showAlertDialog('준비중 입니다.'));
+                },
+                icon: const Icon(Icons.qr_code)
+            ),
+            // 알림 버튼
+            IconButton(
+                onPressed: () {
+                  showDialog<void>(context: context, builder: (context) => _showAlertDialog('준비중 입니다.'));
+                },
+                icon: const Icon(Icons.notifications)
+            ),
+          ],
+        ),
+        actions: [
+          IconButton(
+              onPressed: () => Navigator.pop(context),
+              icon: const Icon(Icons.close)
+          ),
         ],
-        currentIndex: _currentPageIndex,
-        onTap: (index) {
-          setState(() {
-            _currentPageIndex = index;
-          });
-        },
+      ),
+      body: ListView(
+        children: [
+          DrawerHeader(
+            child: Text('Drawer Header'),
+            decoration: BoxDecoration(
+              color: Colors.blue,
+            ),
+          ),
+          ListTile(
+            leading: Icon(Icons.confirmation_number_outlined),
+            title: Text('탑승권'),
+            onTap: () {
+              setState(() {
+                _currentPageIndex = 0;
+                Navigator.pop(context);
+              });
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.near_me_outlined),
+            title: Text('노선검색'),
+            onTap: () {
+              setState(() {
+                _currentPageIndex = 1;
+                Navigator.pop(context);
+              });
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.inventory_2_outlined),
+            title: Text('동행 승하차'),
+            onTap: () {
+              setState(() {
+                _currentPageIndex = 2;
+                Navigator.pop(context);
+              });
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.sentiment_satisfied_alt),
+            title: Text('마이페이지'),
+            onTap: () {
+              setState(() {
+                _currentPageIndex = 3;
+                Navigator.pop(context);
+              });
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.notifications_active_outlined),
+            title: Text('푸시알림'),
+            onTap: () {
+              showDialog<void>(context: context, builder: (context) => _showAlertDialog('준비중 입니다.'));
+            },
+          ),
+        ],
       ),
     );
   }
@@ -172,9 +281,9 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  _showAlertDialog(String titie, String content) {
+  _showAlertDialog(String content, [String? titie]) {
     return AlertDialog(
-      title: Text(titie),
+      title: Text(titie ?? '알림'),
       content: Text(content),
       actions: [
         ElevatedButton(
@@ -183,5 +292,17 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ],
     );
+  }
+
+  _showSnackBar(String content) {
+    final snackBar = SnackBar(
+      content: Text(content),
+      action: SnackBarAction(
+        label: '닫기',
+        onPressed: () {},
+      ),
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 }
