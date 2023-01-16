@@ -1,10 +1,15 @@
 import 'dart:async';
 
-import 'package:card_swiper/card_swiper.dart';
 import 'package:flutter/material.dart';
+import 'package:gowith_v2_for_passenger_prototype/page_gowith.dart';
+import 'package:gowith_v2_for_passenger_prototype/page_mypage.dart';
+import 'package:gowith_v2_for_passenger_prototype/page_route.dart';
 import 'package:location/location.dart';
 
-const String appTitle = '동행 v2 (승객용) 프로토타입 v0.2';
+import 'package:gowith_v2_for_passenger_prototype/page_ticket.dart';
+
+
+const String appTitle = '동행v2 (승객용) v0.2';
 
 void main() {
   runApp(const MyApp());
@@ -30,6 +35,16 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  void _openEndDrawer() {
+    _scaffoldKey.currentState!.openEndDrawer();
+  }
+
+  void _closeEndDrawer() {
+    Navigator.of(context).pop();
+  }
+
   late double? lat;
   late double? lng;
   int nCheckCnt = 0;
@@ -37,25 +52,18 @@ class _MyHomePageState extends State<MyHomePage> {
   late String strLng = '';
   Location location = Location();
 
-  late Image qrImage;
-  int qrWidth  = 250;
-  int qrHeight = 250;
+  List<Widget> _pageList = [
+    pageTicket(),
+    pageRoute(),
+    pageGoWith(),
+    pageMyPage(),
+  ];
 
-  List<Widget> swiperItems = [];
+  int _currentPageIndex = 0;
 
   @override
   void initState() {
     super.initState();
-
-    // QR 이미지 미리 생성.. 하고 싶은데 잘 안된다 ㅠ
-    const String qrResult = "SUCCESS";
-    String qrSrc = 'https://chart.googleapis.com/chart?cht=qr&chld=L|0&chs=${qrWidth}x${qrHeight}&chl=$qrResult';
-    qrImage = Image.network(qrSrc);
-
-    int itemWidth = 300;
-    swiperItems.add(SizedBox(width: itemWidth.toDouble(), height: 150, child: Image.network("https://placeimg.com/${itemWidth}/150", fit: BoxFit.contain,),));
-    swiperItems.add(SizedBox(width: itemWidth.toDouble(), height: 150, child: Image.network("https://placeimg.com/${itemWidth}/150?1", fit: BoxFit.contain,),));
-    swiperItems.add(SizedBox(width: itemWidth.toDouble(), height: 150, child: Image.network("https://placeimg.com/${itemWidth}/150?2", fit: BoxFit.contain,),));
 
     _locateMe(); // 최초 1회 실행
     Timer.periodic(Duration(seconds: 5), (timer) {  // 일정 시간 간격으로 반복
@@ -63,49 +71,74 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  @override
-  void didChangeDependencies() {
-    precacheImage(qrImage.image, context);
-    super.didChangeDependencies();
+  void _onItemTapped(int index) {
+    setState(() {
+      _currentPageIndex = index;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         title: const Text(appTitle),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: <Widget>[
-            const SizedBox(height: 50,),
-            SizedBox(
-              width: qrWidth.toDouble(),
-              height: qrHeight.toDouble(),
-              child: qrImage,
-            ),
-
-            const SizedBox(height: 50,),
-            Text('$nCheckCnt회 위치 조회'),
-            Text(strLat),
-            Text(strLng),
-
-            const SizedBox(height: 50,),
-            SizedBox(
-              width: MediaQuery.of(context).size.width, // 화면 풀 가로 사이즈
-              height: 150,
-              child: Swiper.children(
-                autoplay: false,
-                pagination: SwiperPagination(),
-                control: SwiperControl(),
-                children: swiperItems,
-                viewportFraction: 0.8,
-                scale: 0.9,
-              ),
-            ),
-          ],
+        actions: [
+          // QR 버튼
+          IconButton(
+              onPressed: () {
+                showDialog<void>(context: context, builder: (context) => _showAlertDialog('알림', '준비중 입니다.'));
+              },
+              icon: const Icon(Icons.qr_code)
+          ),
+          // 알림 버튼
+          IconButton(
+              onPressed: () {
+                showDialog<void>(context: context, builder: (context) => _showAlertDialog('알림', '준비중 입니다.'));
+              },
+              icon: const Icon(Icons.notifications)
+          ),
+          // 메뉴 버튼
+          IconButton(
+              onPressed: _openEndDrawer,
+              icon: const Icon(Icons.menu)
+          ),
+        ],
+        bottom: PreferredSize(
+          preferredSize: Size.zero,
+          child: Text(nCheckCnt > 0 ? '$nCheckCnt | $lat | $lng' : ''),
         ),
+      ),
+      endDrawer: Drawer(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              const Text('This is the Drawer'),
+              ElevatedButton(
+                onPressed: _closeEndDrawer,
+                child: const Text('Close Drawer'),
+              ),
+            ],
+          ),
+        ),
+      ),
+      endDrawerEnableOpenDragGesture: false,
+      body: _pageList[_currentPageIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,	// item이 4개 이상일 경우 추가
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.confirmation_number), label: '탑승권'),
+          BottomNavigationBarItem(icon: Icon(Icons.assistant_navigation), label: '노선 검색'),
+          BottomNavigationBarItem(icon: Icon(Icons.link), label: '동행 승하차'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: '마이페이지'),
+        ],
+        currentIndex: _currentPageIndex,
+        onTap: (index) {
+          setState(() {
+            _currentPageIndex = index;
+          });
+        },
       ),
     );
   }
@@ -134,10 +167,21 @@ class _MyHomePageState extends State<MyHomePage> {
 
         if (lat != null) {
           nCheckCnt++;
-          strLat = '현재 위도 : $lat';
-          strLng = '현재 경도 : $lng';
         }
       });
     });
+  }
+
+  _showAlertDialog(String titie, String content) {
+    return AlertDialog(
+      title: Text(titie),
+      content: Text(content),
+      actions: [
+        ElevatedButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('OK'),
+        ),
+      ],
+    );
   }
 }
