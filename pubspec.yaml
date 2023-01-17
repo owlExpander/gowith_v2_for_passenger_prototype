@@ -38,6 +38,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   location: ^4.4.0
   card_swiper: ^2.0.4
+  webview_flutter: ^3.0.4 #^4.0.1
 
 dev_dependencies:
   flutter_test:

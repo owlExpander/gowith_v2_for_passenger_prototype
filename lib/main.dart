@@ -1,13 +1,13 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:gowith_v2_for_passenger_prototype/page_gowith.dart';
-import 'package:gowith_v2_for_passenger_prototype/page_mypage.dart';
-import 'package:gowith_v2_for_passenger_prototype/page_route.dart';
-import 'package:location/location.dart';
+//import 'package:location/location.dart';
 
 import 'package:gowith_v2_for_passenger_prototype/page_ticket.dart';
-
+import 'package:gowith_v2_for_passenger_prototype/page_route.dart';
+import 'package:gowith_v2_for_passenger_prototype/page_gowith.dart';
+import 'package:gowith_v2_for_passenger_prototype/page_mypage.dart';
+import 'package:gowith_v2_for_passenger_prototype/util_location.dart';
 
 const String appTitle = '동행v2 (승객용) v0.4';
 
@@ -45,18 +45,11 @@ class _MyHomePageState extends State<MyHomePage> {
     Navigator.of(context).pop();
   }
 
-  late double? lat;
-  late double? lng;
-  int nCheckCnt = 0;
-  late String strLat = '';
-  late String strLng = '';
-  Location location = Location();
-
-  List<Widget> _pageList = [
-    pageTicket(),
-    pageRoute(),
-    pageGoWith(),
-    pageMyPage(),
+  final List<Widget> _pageList = [
+    const pageTicket(),
+    const pageRoute(),
+    const pageGoWith(),
+    const pageMyPage(),
   ];
 
   int _currentPageIndex = 0;
@@ -65,9 +58,9 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
 
-    _locateMe(); // 최초 1회 실행
+    checkCurrentLocation(); // 최초 1회 실행
     Timer.periodic(Duration(seconds: 5), (timer) {  // 일정 시간 간격으로 반복
-      _locateMe();
+      checkCurrentLocation();
     });
   }
 
@@ -136,34 +129,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   // 메뉴 영역
   Widget getEndDrawer() {
-    /*return Container(
-      width: MediaQuery.of(context).size.width,
-      child: Drawer(
-        child: ListView(
-          children: [
-            DrawerHeader(
-              child: Text('Drawer Header'),
-              decoration: BoxDecoration(
-                color: Colors.blue,
-              ),
-            ),
-            ListTile(
-              title: Text('Item 1'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: Text('Item 2'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-          ],
-        ),
-      ),
-    );*/
-    return Scaffold(
+     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false, // 자동으로 생기는 백버튼 제거
         titleSpacing: 0.0,
@@ -250,35 +216,6 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
       ),
     );
-  }
-
-    /// 현재 위치 조회
-  _locateMe() async {
-    bool serviceEnabled = await location.serviceEnabled();
-    if (!serviceEnabled) {
-      serviceEnabled = await location.requestService();
-      if (!serviceEnabled) {
-        return;
-      }
-    }
-
-    PermissionStatus permissionGranted = await location.hasPermission();
-    if (permissionGranted == PermissionStatus.denied) {
-      permissionGranted = await location.requestPermission();
-      if (permissionGranted != PermissionStatus.granted) {
-        return;
-      }
-    }
-    await location.getLocation().then((res) {
-      setState(() {
-        lat = res.latitude;
-        lng = res.longitude;
-
-        if (lat != null) {
-          nCheckCnt++;
-        }
-      });
-    });
   }
 
   _showAlertDialog(String content, [String? titie]) {
