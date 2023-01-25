@@ -87,36 +87,6 @@ class _MyHomePageState extends State<MyHomePage> {
         appBar: AppBar(
           title: const Text(appTitle),
           actions: [
-            // 네비게이션 실행 테스트
-            IconButton(
-                onPressed: () async {
-                  //print(await KakaoSdk.origin);
-
-                  if (await NaviApi.instance.isKakaoNaviInstalled()) {
-                    // 카카오내비 앱으로 길 안내하기, WGS84 좌표계 사용
-                    await NaviApi.instance.navigate(
-                      option: NaviOption(
-                          coordType: CoordType.wgs84,
-                          vehicleType: VehicleType.third,
-                      ),
-                      destination: Location(name: '어바니엘가산', x: '126.87976185037579', y: '37.4849314292158'),
-                      // 경유지 추가
-                      viaList: [
-                        Location(name: '한화 솔루션큐셀', x: '126.88251119816695', y: '37.476545805363216'),
-                        Location(name: '서울 가산디지털 우체국', x: '126.88020295443398', y: '37.47775984994049'),
-                        Location(name: '카페 마중물', x: '126.8788983048132', y: '37.48055164721279'),
-                        Location(name: '에이스 K1타워', x: '126.87803582657943', y: '37.48253297857724'),
-                        Location(name: '리츠빌 아파트', x: '126.87761051212924', y: '37.486812326444735'),
-                      ],
-                    );
-                  } else {
-                    //print('카카오내비 미설치');
-                    // 카카오내비 설치 페이지로 이동
-                    launchBrowserTab(Uri.parse(NaviApi.webNaviInstall));
-                  }
-                },
-                icon: const Icon(Icons.navigation_outlined)
-            ),
             // QR 버튼
             IconButton(
                 visualDensity: const VisualDensity(horizontal: -4.0, vertical: -4.0), // 아이콘 간격 줄임
@@ -165,6 +135,36 @@ class _MyHomePageState extends State<MyHomePage> {
               _currentPageIndex = index;
             });
           },
+        ),
+        // 네비 실행 테스트
+        floatingActionButton: FloatingActionButton(
+          onPressed: () async {
+            //print(await KakaoSdk.origin);
+
+            if (await NaviApi.instance.isKakaoNaviInstalled()) {
+              // 카카오내비 앱으로 길 안내하기, WGS84 좌표계 사용
+              await NaviApi.instance.navigate(
+                option: NaviOption(
+                  coordType: CoordType.wgs84,
+                  vehicleType: VehicleType.third,
+                ),
+                destination: Location(name: '어바니엘가산', x: '126.87976185037579', y: '37.4849314292158'),
+                // 경유지 추가
+                viaList: [
+                  Location(name: '한화 솔루션큐셀', x: '126.88251119816695', y: '37.476545805363216'),
+                  Location(name: '서울 가산디지털 우체국', x: '126.88020295443398', y: '37.47775984994049'),
+                  Location(name: '카페 마중물', x: '126.8788983048132', y: '37.48055164721279'),
+                  Location(name: '에이스 K1타워', x: '126.87803582657943', y: '37.48253297857724'),
+                  Location(name: '리츠빌 아파트', x: '126.87761051212924', y: '37.486812326444735'),
+                ],
+              );
+            } else {
+              //print('카카오내비 미설치');
+              // 카카오내비 설치 페이지로 이동
+              launchBrowserTab(Uri.parse(NaviApi.webNaviInstall));
+            }
+          },
+          child: const Icon(Icons.navigation),
         ),
       ),
     );
